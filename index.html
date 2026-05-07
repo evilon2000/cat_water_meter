@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Parchment of Lala, Guardian of Water</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap');
+
+  :root {
+    --ink: #4e3927;
+    --ink-soft: #7f6147;
+    --gold: #8e6a30;
+    --paper-1: #f3e6c4;
+    --paper-2: #e4cf9d;
+    --paper-3: #cfb57f;
+    --burn: #7a5430;
+    --shadow: rgba(76, 48, 19, 0.18);
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+  }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    color: var(--ink);
+    background:
+      radial-gradient(circle at 15% 12%, rgba(255, 245, 214, 0.88), transparent 20%),
+      radial-gradient(circle at 82% 16%, rgba(201, 160, 97, 0.32), transparent 22%),
+      radial-gradient(circle at 50% 110%, rgba(90, 61, 26, 0.20), transparent 28%),
+      linear-gradient(180deg, #7f6442 0%, #5e452b 100%);
+  }
+
+  body {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 12px;
+    pointer-events: none;
+    border: 1px solid rgba(255, 232, 173, 0.18);
+    box-shadow: inset 0 0 0 1px rgba(67, 43, 19, 0.22);
+  }
+
+  #stage {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at center, rgba(255, 251, 234, 0.18), transparent 58%);
+  }
+
+  .parchment {
+    position: absolute;
+    inset: 26px;
+    border-radius: 22px;
+    background:
+      radial-gradient(circle at 20% 14%, rgba(255, 247, 224, 0.88), transparent 20%),
+      radial-gradient(circle at 78% 22%, rgba(218, 188, 126, 0.35), transparent 26%),
+      radial-gradient(circle at 50% 100%, rgba(160, 114, 56, 0.16), transparent 35%),
+      linear-gradient(180deg, var(--paper-1) 0%, var(--paper-2) 58%, var(--paper-3) 100%);
+    box-shadow:
+      0 32px 90px rgba(25, 14, 7, 0.42),
+      inset 0 0 0 2px rgba(120, 79, 38, 0.18),
+      inset 0 0 70px rgba(113, 69, 21, 0.12);
+  }
+
+  .parchment::before {
+    content: "";
+    position: absolute;
+    inset: 14px;
+    border-radius: 16px;
+    border: 1px solid rgba(114, 73, 32, 0.24);
+    pointer-events: none;
+  }
+
+  .parchment::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 22px;
+    pointer-events: none;
+    opacity: 0.12;
+    background-image:
+      radial-gradient(circle at 10% 20%, #6d4a28 0 1px, transparent 1px),
+      radial-gradient(circle at 82% 12%, #7b542b 0 1px, transparent 1px),
+      radial-gradient(circle at 40% 66%, #7b542b 0 1px, transparent 1px),
+      radial-gradient(circle at 74% 74%, #7b542b 0 1px, transparent 1px);
+    background-size: 160px 160px, 180px 180px, 220px 220px, 190px 190px;
+  }
+
+  .line,
+  .headline-line,
+  .subtitle-line,
+  .drop-cap {
+    position: absolute;
+    white-space: pre;
+    user-select: text;
+    -webkit-user-select: text;
+  }
+
+  .line {
+    z-index: 1;
+    color: rgba(67, 46, 28, 0.96);
+    text-shadow: 0 1px 0 rgba(255, 247, 230, 0.42);
+  }
+
+  .headline-line {
+    z-index: 2;
+    color: var(--burn);
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-shadow: 0 1px 0 rgba(255, 247, 232, 0.65);
+  }
+
+  .subtitle-line {
+    z-index: 2;
+    color: rgba(117, 82, 46, 0.82);
+    font-style: italic;
+  }
+
+  .drop-cap {
+    z-index: 2;
+    pointer-events: none;
+    color: #8b4f26;
+    text-shadow: 2px 2px 0 rgba(255, 242, 211, 0.4);
+  }
+
+  .cat-wrap {
+    position: absolute;
+    z-index: 12;
+    will-change: transform;
+    cursor: grab;
+    touch-action: none;
+    filter: drop-shadow(0 22px 26px rgba(74, 49, 27, 0.16));
+  }
+
+  .cat-wrap.dragging {
+    cursor: grabbing;
+  }
+
+  .cat-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    opacity: 0;
+    position: absolute;
+    inset: 0;
+    transition: opacity 130ms linear;
+  }
+
+  .cat-wrap img.active {
+    opacity: 1;
+  }
+
+  .meter-glow {
+    position: absolute;
+    inset: 50% auto auto 50%;
+    width: 46%;
+    height: 26%;
+    transform: translate(-50%, -50%);
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(92, 183, 198, 0.34), rgba(92, 183, 198, 0.04) 58%, transparent 76%);
+    pointer-events: none;
+    opacity: 0.62;
+  }
+
+  .meter-ring {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 24%;
+    height: 24%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    border: 2px solid rgba(69, 136, 148, 0.42);
+    box-shadow: 0 0 0 8px rgba(113, 183, 191, 0.08);
+    pointer-events: none;
+  }
+
+  .hint {
+    position: fixed;
+    top: 22px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 40;
+    pointer-events: none;
+    padding: 10px 20px;
+    border-radius: 999px;
+    background: rgba(81, 55, 29, 0.62);
+    color: rgba(255, 236, 196, 0.88);
+    font: 400 13px/1 'Cinzel', serif;
+    letter-spacing: 1.4px;
+    box-shadow: 0 10px 30px rgba(28, 17, 9, 0.18);
+  }
+
+  .dust {
+    position: fixed;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 999;
+    animation: dust-rise 0.9s ease-out forwards;
+  }
+
+  @keyframes dust-rise {
+    0% { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-30px) scale(0.2); }
+  }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="parchment"></div>
+</div>
+<div class="hint">Drag the parchment cat · The tale reflows around its watch · Guardian of water and meter song</div>
+<script>
+(function () {
+  const stage = document.getElementById('stage');
+  const parchment = document.querySelector('.parchment');
+
+  const BODY_FONT = '18px "Cormorant Garamond", Georgia, serif';
+  const BODY_LINE_HEIGHT = 31;
+  const HEADLINE_FONT_FAMILY = '"Cinzel", serif';
+  const HEADLINE_TEXT = 'LALA, KEEPER OF THE WATER VEIN';
+  const SUBTITLE_TEXT = 'A parchment chronicle of the cat who guarded the ultrasonic meter and taught a town to listen to every drop';
+  const BODY_TEXT = `Long before the city learned to count its water with cold dashboards and monthly reports, the hill-village of Qingspring was said to possess a listening meter unlike any other. It was not a brass dial, nor a clattering wheel, but an ultrasonic heart set beneath a stone arch where the old aqueduct entered the town. The instrument could hear what men ignored: the hurried tremor of waste, the hollow pulse of a leaking pipe, the quiet gratitude of a cistern filled with rain kept for summer.
+
+Yet the meter did not keep its own watch. Every instrument, said the elders, requires a conscience beside its measurements. Thus there came to dwell in the hall of valves a gray-and-white cat called Lala, soft of paw and bright of whisker, who slept upon warm ledgers by day and made her rounds by lantern dusk. She was small enough to slip between copper risers, patient enough to wait beside a trembling flange, and proud enough to treat every dripping joint as if it were a matter of the earth's own dignity.
+
+The children first believed she was merely lazy, for they found her curled near the meter face, tail wrapped close, as if the whole burden of vigilance were only a reason for better naps. But the engineers knew otherwise. When the ultrasonic chamber shimmered with blue reading-lines, Lala would rouse, roll once upon the parchment mats, and spring to her feet as if some invisible bell had spoken directly into her bones. She would lick her chest, smooth one shoulder, and then dart left or right along the service trench until she located the faintest wrongness in the sound of moving water.
+
+On dry seasons she guarded the town from waste. On storm days she guarded it from panic. She sat beside the meter whenever the numbers rose too quickly, and people swore that if Lala narrowed her eyes and laid one paw against the brass housing, the whole village grew quieter with its taps. Bakers stored rinse water for their gardens. Shopkeepers repaired old joints instead of ignoring them. The schoolchildren learned to turn listening into ritual: hear, measure, mend, and thank.
+
+There were nights when the aqueduct moaned beneath moonlight and the orchards seemed to drink faster than the clouds could promise. Then the keeper-cat made her sacred circuit. She would tumble from sleep, gather herself in a single silk-quick motion, groom away the dust of dreams, race once to the left gallery, once to the right, and halt directly beneath the instrument's pale pulse. There she became, for one suspended second, less a cat than a seal upon the covenant between thirst and restraint.
+
+Those who recorded the meter's figures began recording Lala as well. In the margins of maintenance books they drew her in profile, in motion, in repose beside the chamber lamp. They wrote that no lecture on conservation persuaded as deeply as the sight of a creature who loved clean water enough to defend it without speech. They wrote that the best guardians do not dominate a system, but teach everyone around it to hear what was always there.
+
+So the legend spread beyond Qingspring. Inspectors carried copies of the tale. Designers of new water networks cited the old proverb born from the meter hall: measure with clarity, repair with humility, and keep one watchful life close to the source. To this day, when a hidden leak is found before a field runs dry, some still say Lala has rolled in her sleep, risen, and made another patrol through the unseen channels beneath the earth.`;
+
+  const CAT_FRAMES = Array.from({ length: 6 }, (_, index) => `./groom_v2_transparent/lala_groom_v2_transparent_${String(index + 1).padStart(2, '0')}.png`);
+  const GUTTER = 78;
+  const COL_GAP = 42;
+  const BOTTOM_GAP = 42;
+  const DROP_CAP_LINES = 3;
+  const CAT_RADIUS = 104;
+  const CAT_PAD_H = 16;
+  const CAT_PAD_V = 14;
+  const MIN_SLOT_WIDTH = 120;
+  const NARROW_BREAKPOINT = 900;
+  const NARROW_GUTTER = 36;
+  const NARROW_COL_GAP = 24;
+  const NARROW_BOTTOM_GAP = 28;
+  const NARROW_CAT_SCALE = 0.8;
+
+  const measurementCanvas = document.createElement('canvas');
+  const measureCtx = measurementCanvas.getContext('2d');
+
+  function normalizeWhitespace(text) {
+    return text.replace(/\r\n/g, '\n').replace(/\n\s+/g, '\n').trim();
+  }
+
+  function makeWords(text) {
+    return normalizeWhitespace(text).split(/\s+/);
+  }
+
+  function measure(text, font) {
+    measureCtx.font = font;
+    return measureCtx.measureText(text).width;
+  }
+
+  function prepareWords(text, font) {
+    return makeWords(text).map(word => ({ text: word, width: measure(word, font) }));
+  }
+
+  function lineText(words, start, end) {
+    return words.slice(start, end).map(word => word.text).join(' ');
+  }
+
+  function carveTextLineSlots(base, blocked) {
+    let slots = [base];
+    for (const interval of blocked) {
+      const next = [];
+      for (const slot of slots) {
+        if (interval.right <= slot.left || interval.left >= slot.right) {
+          next.push(slot);
+          continue;
+        }
+        if (interval.left > slot.left) next.push({ left: slot.left, right: interval.left });
+        if (interval.right < slot.right) next.push({ left: interval.right, right: slot.right });
+      }
+      slots = next;
+    }
+    return slots.filter(slot => slot.right - slot.left >= MIN_SLOT_WIDTH);
+  }
+
+  function circleIntervalForBand(cx, cy, r, bandTop, bandBottom, hPad, vPad) {
+    const top = bandTop - vPad;
+    const bottom = bandBottom + vPad;
+    if (top >= cy + r || bottom <= cy - r) return null;
+    const minDy = cy >= top && cy <= bottom ? 0 : cy < top ? top - cy : cy - bottom;
+    if (minDy >= r) return null;
+    const maxDx = Math.sqrt(r * r - minDy * minDy);
+    return { left: cx - maxDx - hPad, right: cx + maxDx + hPad };
+  }
+
+  function fitWords(words, startIndex, maxWidth, font) {
+    if (startIndex >= words.length) return null;
+    const spaceWidth = measure(' ', font);
+    let width = 0;
+    let endIndex = startIndex;
+
+    while (endIndex < words.length) {
+      const nextWidth = words[endIndex].width + (endIndex > startIndex ? spaceWidth : 0);
+      if (width + nextWidth > maxWidth && endIndex > startIndex) break;
+      if (width + nextWidth > maxWidth && endIndex === startIndex) {
+        width = words[endIndex].width;
+        endIndex++;
+        break;
+      }
+      width += nextWidth;
+      endIndex++;
+    }
+
+    return {
+      text: lineText(words, startIndex, endIndex),
+      width: Math.round(width),
+      nextIndex: endIndex
+    };
+  }
+
+  function layoutParagraph(words, startIndex, regionX, regionY, regionW, regionH, lineHeight, font, obstacles, rects) {
+    let index = startIndex;
+    let lineTop = regionY;
+    const lines = [];
+
+    while (lineTop + lineHeight <= regionY + regionH && index < words.length) {
+      const bandTop = lineTop;
+      const bandBottom = lineTop + lineHeight;
+      const blocked = [];
+
+      for (const obstacle of obstacles) {
+        const interval = circleIntervalForBand(obstacle.cx, obstacle.cy, obstacle.r, bandTop, bandBottom, obstacle.hPad, obstacle.vPad);
+        if (interval) blocked.push(interval);
+      }
+
+      for (const rect of rects) {
+        if (bandBottom <= rect.y || bandTop >= rect.y + rect.h) continue;
+        blocked.push({ left: rect.x, right: rect.x + rect.w });
+      }
+
+      const slots = carveTextLineSlots({ left: regionX, right: regionX + regionW }, blocked).sort((a, b) => a.left - b.left);
+      if (slots.length === 0) {
+        lineTop += lineHeight;
+        continue;
+      }
+
+      for (const slot of slots) {
+        if (index >= words.length) break;
+        const line = fitWords(words, index, slot.right - slot.left, font);
+        if (!line) break;
+        lines.push({ x: Math.round(slot.left), y: Math.round(lineTop), text: line.text, width: line.width });
+        index = line.nextIndex;
+      }
+
+      lineTop += lineHeight;
+    }
+
+    return { lines, nextIndex: index };
+  }
+
+  const paragraphs = BODY_TEXT.split('\n\n').map(paragraph => prepareWords(paragraph, BODY_FONT));
+  const SUBTITLE_FONT = 'italic 17px ' + HEADLINE_FONT_FAMILY;
+  const DROP_CAP_TEXT = BODY_TEXT.trim()[0];
+  const DROP_CAP_FONT_SIZE = BODY_LINE_HEIGHT * DROP_CAP_LINES - 4;
+  const DROP_CAP_FONT = `700 ${DROP_CAP_FONT_SIZE}px ${HEADLINE_FONT_FAMILY}`;
+  const DROP_CAP_TOTAL_W = Math.ceil(measure(DROP_CAP_TEXT, DROP_CAP_FONT)) + 18;
+  const dropCapEl = document.createElement('div');
+  dropCapEl.className = 'drop-cap';
+  dropCapEl.textContent = DROP_CAP_TEXT;
+  dropCapEl.style.font = DROP_CAP_FONT;
+  dropCapEl.style.lineHeight = DROP_CAP_FONT_SIZE + 'px';
+  stage.appendChild(dropCapEl);
+
+  const cat = {
+    x: window.innerWidth * 0.69,
+    y: window.innerHeight * 0.48,
+    r: CAT_RADIUS,
+    anchorX: window.innerWidth * 0.69,
+    anchorY: window.innerHeight * 0.48,
+    idlePhase: 0,
+    frame: 0
+  };
+
+  let dragState = null;
+  let lastFrameTime = null;
+  let frameTimer = 0;
+  let committedSignature = '';
+  const linePool = [];
+  const headlinePool = [];
+  const subtitlePool = [];
+
+  const catEl = document.createElement('div');
+  catEl.className = 'cat-wrap';
+  catEl.innerHTML = `
+    <div class="meter-glow"></div>
+    <div class="meter-ring"></div>
+    ${CAT_FRAMES.map((src, index) => `<img src="${src}" alt="Lala water guardian frame ${index + 1}"${index === 0 ? ' class="active"' : ''}>`).join('')}
+  `;
+  stage.appendChild(catEl);
+  const catImages = Array.from(catEl.querySelectorAll('img'));
+
+  function syncPool(pool, count, create) {
+    while (pool.length < count) {
+      const el = create();
+      stage.appendChild(el);
+      pool.push(el);
+    }
+    for (let i = 0; i < pool.length; i++) pool[i].style.display = i < count ? '' : 'none';
+  }
+
+  function fitHeadline(maxWidth, maxHeight, maxSize) {
+    let lo = 20;
+    let hi = maxSize;
+    let best = { fontSize: lo, lines: [] };
+
+    while (lo <= hi) {
+      const size = Math.floor((lo + hi) / 2);
+      const font = `700 ${size}px ${HEADLINE_FONT_FAMILY}`;
+      const words = prepareWords(HEADLINE_TEXT, font);
+      const lineHeight = Math.round(size * 1.02);
+      const lines = [];
+      let index = 0;
+      while (index < words.length) {
+        const line = fitWords(words, index, maxWidth, font);
+        lines.push({ x: 0, y: lines.length * lineHeight, text: line.text, width: line.width });
+        index = line.nextIndex;
+      }
+      if (lines.length * lineHeight <= maxHeight) {
+        best = { fontSize: size, lineHeight, lines };
+        lo = size + 1;
+      } else {
+        hi = size - 1;
+      }
+    }
+
+    return best;
+  }
+
+  function projectText(headline, subtitle, bodyLines) {
+    syncPool(headlinePool, headline.lines.length, () => {
+      const el = document.createElement('span');
+      el.className = 'headline-line';
+      return el;
+    });
+
+    headline.lines.forEach((line, index) => {
+      const el = headlinePool[index];
+      el.textContent = line.text;
+      el.style.font = headline.font;
+      el.style.lineHeight = headline.lineHeight + 'px';
+      el.style.left = line.x + 'px';
+      el.style.top = line.y + 'px';
+    });
+
+    syncPool(subtitlePool, subtitle.lines.length, () => {
+      const el = document.createElement('span');
+      el.className = 'subtitle-line';
+      return el;
+    });
+
+    subtitle.lines.forEach((line, index) => {
+      const el = subtitlePool[index];
+      el.textContent = line.text;
+      el.style.font = SUBTITLE_FONT;
+      el.style.lineHeight = subtitle.lineHeight + 'px';
+      el.style.left = line.x + 'px';
+      el.style.top = line.y + 'px';
+    });
+
+    syncPool(linePool, bodyLines.length, () => {
+      const el = document.createElement('span');
+      el.className = 'line';
+      return el;
+    });
+
+    bodyLines.forEach((line, index) => {
+      const el = linePool[index];
+      el.textContent = line.text;
+      el.style.font = BODY_FONT;
+      el.style.lineHeight = BODY_LINE_HEIGHT + 'px';
+      el.style.left = line.x + 'px';
+      el.style.top = line.y + 'px';
+    });
+  }
+
+  function makeDust(x, y) {
+    const p = document.createElement('div');
+    p.className = 'dust';
+    p.style.left = x + 'px';
+    p.style.top = y + 'px';
+    p.style.width = p.style.height = (3 + Math.random() * 6) + 'px';
+    p.style.background = ['#d4c08e', '#b18855', '#efe3bd', '#9cc7cb'][Math.floor(Math.random() * 4)];
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 900);
+  }
+
+  function setCatFrame(index) {
+    cat.frame = index % catImages.length;
+    catImages.forEach((img, imageIndex) => {
+      img.classList.toggle('active', imageIndex === cat.frame);
+    });
+  }
+
+  function hitTest(px, py, radius) {
+    const dx = px - cat.x;
+    const dy = py - cat.y;
+    return dx * dx + dy * dy <= radius * radius * 1.18;
+  }
+
+  function render(now) {
+    const pageWidth = document.documentElement.clientWidth;
+    const pageHeight = document.documentElement.clientHeight;
+    const isNarrow = pageWidth < NARROW_BREAKPOINT;
+    const gutter = isNarrow ? NARROW_GUTTER : GUTTER;
+    const colGap = isNarrow ? NARROW_COL_GAP : COL_GAP;
+    const bottomGap = isNarrow ? NARROW_BOTTOM_GAP : BOTTOM_GAP;
+    const scale = isNarrow ? NARROW_CAT_SCALE : 1;
+
+    const parchmentRect = parchment.getBoundingClientRect();
+    const usableLeft = parchmentRect.left + gutter;
+    const usableTop = parchmentRect.top + gutter;
+    const usableRight = parchmentRect.right - gutter;
+    const usableBottom = parchmentRect.bottom - bottomGap;
+
+    const dt = Math.min(((now - (lastFrameTime || now)) / 1000), 0.05);
+    lastFrameTime = now;
+
+    const r = cat.r * scale;
+    if (!dragState) {
+      cat.idlePhase += dt;
+      cat.anchorX = Math.min(Math.max(cat.anchorX, usableLeft + r), usableRight - r);
+      cat.anchorY = Math.min(Math.max(cat.anchorY, usableTop + 48 + r), usableBottom - r);
+      cat.x = cat.anchorX + Math.sin(cat.idlePhase * 0.7) * 8;
+      cat.y = cat.anchorY + Math.cos(cat.idlePhase * 1.1) * 6;
+    } else {
+      cat.x = Math.min(Math.max(cat.x, usableLeft + r), usableRight - r);
+      cat.y = Math.min(Math.max(cat.y, usableTop + 48 + r), usableBottom - r);
+    }
+
+    frameTimer += dt;
+    if (frameTimer >= 0.32) {
+      frameTimer = 0;
+      setCatFrame(cat.frame + 1);
+    }
+
+    const dSize = r * 2;
+    catEl.style.left = (cat.x - r) + 'px';
+    catEl.style.top = (cat.y - r) + 'px';
+    catEl.style.width = dSize + 'px';
+    catEl.style.height = dSize + 'px';
+
+    const headlineWidth = Math.min(parchmentRect.width - gutter * 2, 930);
+    const headline = fitHeadline(headlineWidth, Math.floor(parchmentRect.height * 0.16), isNarrow ? 34 : 72);
+    headline.font = `700 ${headline.fontSize}px ${HEADLINE_FONT_FAMILY}`;
+    const headlineLeft = parchmentRect.left + gutter;
+    const headlineTop = parchmentRect.top + gutter;
+    headline.lines = headline.lines.map(line => ({ ...line, x: headlineLeft + line.x, y: headlineTop + line.y }));
+
+    const subtitleWords = prepareWords(SUBTITLE_TEXT, SUBTITLE_FONT);
+    const subtitleLineHeight = 24;
+    const subtitleLines = [];
+    let subtitleIndex = 0;
+    while (subtitleIndex < subtitleWords.length) {
+      const line = fitWords(subtitleWords, subtitleIndex, headlineWidth, SUBTITLE_FONT);
+      subtitleLines.push({
+        x: headlineLeft,
+        y: headlineTop + headline.lines.length * headline.lineHeight + 14 + subtitleLines.length * subtitleLineHeight,
+        text: line.text,
+        width: line.width
+      });
+      subtitleIndex = line.nextIndex;
+    }
+
+    const bodyTop = subtitleLines[subtitleLines.length - 1].y + subtitleLineHeight + 24;
+    const bodyHeight = parchmentRect.bottom - bottomGap - bodyTop;
+    const contentWidth = parchmentRect.width - gutter * 2;
+    const columnCount = pageWidth > 1120 ? 2 : 1;
+    const columnWidth = Math.floor((contentWidth - colGap * (columnCount - 1)) / columnCount);
+    const contentLeft = parchmentRect.left + gutter;
+
+    dropCapEl.style.left = contentLeft + 'px';
+    dropCapEl.style.top = bodyTop + 'px';
+
+    const circleObstacles = [{ cx: cat.x, cy: cat.y + r * 0.04, r: r * 0.88, hPad: CAT_PAD_H, vPad: CAT_PAD_V }];
+    const dropCapRect = { x: contentLeft - 2, y: bodyTop - 2, w: DROP_CAP_TOTAL_W, h: DROP_CAP_LINES * BODY_LINE_HEIGHT + 2 };
+    const bodyLines = [];
+
+    let paragraphIndex = 0;
+    let wordIndex = 0;
+
+    for (let col = 0; col < columnCount; col++) {
+      const colX = contentLeft + col * (columnWidth + colGap);
+      const rects = col === 0 ? [dropCapRect] : [];
+      let regionY = bodyTop;
+
+      while (paragraphIndex < paragraphs.length && regionY + BODY_LINE_HEIGHT <= bodyTop + bodyHeight) {
+        const words = paragraphs[paragraphIndex];
+        const result = layoutParagraph(words, wordIndex, colX, regionY, columnWidth, bodyTop + bodyHeight - regionY, BODY_LINE_HEIGHT, BODY_FONT, circleObstacles, rects);
+        bodyLines.push(...result.lines);
+        wordIndex = result.nextIndex;
+
+        const consumedLines = result.lines.length;
+        regionY += consumedLines * BODY_LINE_HEIGHT;
+
+        if (wordIndex >= words.length) {
+          paragraphIndex++;
+          wordIndex = 0;
+          regionY += BODY_LINE_HEIGHT;
+        } else {
+          break;
+        }
+      }
+    }
+
+    const signature = [
+      cat.x.toFixed(1),
+      cat.y.toFixed(1),
+      bodyLines.map(line => `${line.x}|${line.y}|${line.text}`).join('~'),
+      headline.lines.map(line => line.text).join('|'),
+      subtitleLines.map(line => line.text).join('|')
+    ].join('::');
+
+    if (signature !== committedSignature) {
+      committedSignature = signature;
+      projectText(
+        { lines: headline.lines, font: headline.font, lineHeight: headline.lineHeight },
+        { lines: subtitleLines, lineHeight: subtitleLineHeight },
+        bodyLines
+      );
+    }
+
+    requestAnimationFrame(render);
+  }
+
+  stage.addEventListener('pointerdown', event => {
+    const scale = document.documentElement.clientWidth < NARROW_BREAKPOINT ? NARROW_CAT_SCALE : 1;
+    if (!hitTest(event.clientX, event.clientY, cat.r * scale)) return;
+    event.preventDefault();
+    catEl.classList.add('dragging');
+    dragState = { sx: event.clientX, sy: event.clientY, ox: cat.x, oy: cat.y };
+    for (let i = 0; i < 5; i++) makeDust(event.clientX + (Math.random() - 0.5) * 30, event.clientY + (Math.random() - 0.5) * 16);
+  });
+
+  window.addEventListener('pointermove', event => {
+    if (!dragState) return;
+    cat.x = dragState.ox + (event.clientX - dragState.sx);
+    cat.y = dragState.oy + (event.clientY - dragState.sy);
+    if (Math.random() > 0.82) makeDust(event.clientX + (Math.random() - 0.5) * 10, event.clientY + 6 + Math.random() * 6);
+  });
+
+  window.addEventListener('pointerup', () => {
+    if (!dragState) return;
+    catEl.classList.remove('dragging');
+    cat.anchorX = cat.x;
+    cat.anchorY = cat.y;
+    dragState = null;
+  });
+
+  requestAnimationFrame(render);
+})();
+</script>
+</body>
+</html>
